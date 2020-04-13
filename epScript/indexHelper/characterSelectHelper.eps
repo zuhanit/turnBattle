@@ -1,0 +1,56 @@
+import customText as ct;
+import effect as ef;
+
+const charCode = [0, 1, 38, 61, 65, 67];
+
+const charInfoText = [
+Db("\t\x17탐험가\n\t\t\x04전체적으로 데미지가 낮지만 아군에게 큰 도움이 되는 캐릭터\n\t\t\x04함정을 설치하고 느리게 하여 아군 기술의 효율성을 크게 높여준다.\n\t\t\x04그러나 혼자서는 할 수 있는 것이 적으므로 항상 아군과 함께해야 한다."),
+Db("\t\x17궁수\n\t\t\x04긴 사정거리를 이용해 적을 견제하는 캐릭터\n\t\t\x04후방에 위치해 아군의 공격을 지원할 수 있다.\n\t\t\x04하지만 체력이 낮은 것이 단점."),
+Db("\t\x17부두술사\n\t\t\x04적에게 저주를 걸어 지속적으로 공격하는 캐릭터.\n\t\t\x04다만 효과를 발휘하기 위해선 시간이 필요하다.\n\t\t\x04기술 위주 캐릭터지만 어느정도 선두에 서는 것을 추천."),
+Db("\t\x17검사\n\t\t\x04근접전에서 가장 강력한 캐릭터.\n\t\t\x04그러나 이동 속도가 조금 느려 근접하기가 어렵다. \n\t\t\x04뒤를 돌거나 아군의 지원을 받는다면 큰 역할을 해낼수 있다."),
+Db("\t\x17질럿\n\t\t\x04적에게 근접해서 공격하는 캐릭터\n\t\t\x04또한 체력이 높아 전선의 선두에 설 수 있다.\n\t\t\x04다만 혼자 진입한다면 적의 공격에 속수무책으로 당할 것이다."),
+Db("\t\x17마법사\n\t\t\x04기본 공격을 할 수 없지만 유용한 마법을 사용하는 캐릭터\n\t\t\x04이동 속도가 느리고 체력이 낮으므로 접근전은 위험하다.\n\t\t\x04또한 적을 맞추지 못한다면 마법이 무용지물이 되므로 신중해야 한다.")
+];
+
+const charName = [
+Db("\x17탐험가"),
+Db("\x17궁수"),
+Db("\x17부두술사"),
+Db("\x17검사"),
+Db("\x17전사"),
+Db("\x17마법사")
+];
+
+function CUnit(index) {
+    if (index == 0) {
+        return 0x59CCA8;
+    }
+    return 0x628298 - 0x150 * (index-1);
+}
+
+function character_info(num) {
+    GiveUnits(1, charCode[num], P12, "Anywhere", P11); // 64 = Anywhere
+    GiveUnits(1, charCode[num], P11, "Anywhere", P12);
+    ct.print("\n\n\n\n\n\n\n\n\n\n");
+    ct.print(ct.str(charInfoText[num]));
+    MoveLocation("[Map] Effect", charCode[num], P12, "[Map] Select Field");
+    ef.halluEffect(P8, "Devouring One", "[Map] Effect");
+    PlayWAV("Upgrade.ogg");
+    SetDeaths(cp, SetTo, 1+(2*i), "Mercenary Gunship (Unused)");
+}
+
+function character_select(num) {
+    const cp = getcurpl();
+    GiveUnits(1, charCode[num], P12, "Anywhere", P11);
+    GiveUnits(1, charCode[num], P11, "Anywhere", P12);
+    ct.print("\n\n\n\n\n\n\n\n\n\n");
+    ct.print("\n\n\n\n\x13", ct.str(charName[num]), "\x04를 선택하셨습니다!\n\x13\x05다른 플레이어들이 선택할 때까지 기다려주세요.\n\n\n\n\n");
+    PlayWAV("Battlecry_1.ogg");
+    MoveLocation("[Map] Effect", charCode[num], P12, "[Map] Select Field");   
+    ef.halluEffect(P8, "Devouring One", "[Map] Effect");
+    ef.halluEffect(P8, "Kakaru", "[Map] Effect");
+    SetDeaths(cp, SetTo, i, "Cargo Ship");
+    playerChar[cp] = i;
+    SetDeaths(cp, SetTo, 0, "Mercenary Gunship (Unused)");
+    KillUnit("Flag", cp);
+}

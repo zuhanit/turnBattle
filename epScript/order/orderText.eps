@@ -1,0 +1,118 @@
+/* 명령 텍스트, 그리고 명령 선택을 담당하는 eps. */    
+            
+        
+import effect as ef;
+import customText as ct;
+import useIndex as ui;
+var txtPtr;
+
+// 마우스 위치 배열 선언
+const mouseX = [0, 0, 0, 0, 0, 0, 0, 0];
+const mouseY = [0, 0, 0, 0, 0, 0, 0, 0];
+
+// 상수 선언
+const oS = $U("orderSelect");
+const turnTF = $U("turnTF");
+const oSP = $U("orderSelectPosition");
+	
+    
+// 상수 선언
+function orderText () {
+    const cp = getcurpl();
+    if( // 턴이 시작됐고, 선택한 명령이 없으며, 자신이 턴을 진행중임
+        Switch($S("turnOn"), Set) && 
+        Deaths(CurrentPlayer, Exactly, 0, oS) && 
+        Deaths(CurrentPlayer, Exactly, 1, turnTF)
+    ){
+        mouseX[cp] = dwread(0x6CDDC4); // 0x6CDDC4 = mousePositionX
+        mouseY[cp] = dwread(0x6CDDC8);
+        var timer2;
+        timer2 += 1;
+        if(
+            timer2 == 1
+        ){
+            ct.print("\n\n\n\n\n\n\x13\x17TURN START !\n\n\n\n");
+            ui.turnStartEffect();
+            PlayWAV("Change.ogg");
+        }
+        if(
+            timer2 == 15
+        ){
+            DisplayText("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", (4));
+        }
+        if(
+            timer2 >= 16
+        ){
+            if(
+                Deaths(CurrentPlayer, Exactly, 0, $U("orderSelect")) && 
+                mouseX[cp] >= 211 && 
+                mouseX[cp] <= 230 && 
+                mouseY[cp] >= 111 && 
+                mouseY[cp] <= 123
+            ){
+                SetDeaths(CurrentPlayer, SetTo, 1, oSP);
+                txtPtr = dwread_epd(EPD(0x640B58));
+                ct.print("\x13\x11공격\t\t\x17ㅣ\t\t\x04이동\t\t\x17ㅣ\t\t\x04기술\n\x13\x04아이템 사용\t\x17ㅣ\t\t\x04턴 넘기기\n\n\n\n\n\n\n");
+                SetMemory(0x640B58, SetTo, txtPtr);
+            }
+            else{
+                if(
+                    mouseX[cp] >= 310 && 
+                    mouseX[cp] <= 332 && 
+                    mouseY[cp] >= 111 && 
+                    mouseY[cp] <= 123
+                ){
+                    SetDeaths(CurrentPlayer, SetTo, 2, oSP);
+                    txtPtr = dwread_epd(EPD(0x640B58));
+                    ct.print("\x13\x04공격\t\t\x17ㅣ\t\t\x11이동\t\t\x17ㅣ\t\t\x04기술\n\x13\x04아이템 사용\t\x17ㅣ\t\t\x04턴 넘기기\n\n\n\n\n\n\n");
+                        SetMemory(0x640B58, SetTo, txtPtr);
+                }
+                else{
+                    if(
+                        mouseX[cp] >= 410 && 
+                        mouseX[cp] <= 432 && 
+                        mouseY[cp] >= 111 && 
+                        mouseY[cp] <= 123
+                    ){
+                        SetDeaths(CurrentPlayer, SetTo, 3, oSP);
+                        txtPtr = dwread_epd(EPD(0x640B58));
+                        ct.print("\x13\x04공격\t\t\x17ㅣ\t\t\x04이동\t\t\x17ㅣ\t\t\x11기술\n\x13\x04아이템 사용\t\x17ㅣ\t\t\x04턴 넘기기\n\n\n\n\n\n\n");
+                        SetMemory(0x640B58, SetTo, txtPtr);
+                    }
+                    else{
+                        if(
+                            mouseX[cp] >= 246 && 
+                            mouseX[cp] <= 303 && 
+                            mouseY[cp] >= 130 && 
+                            mouseY[cp] <= 140
+                        ){
+                            SetDeaths(CurrentPlayer, SetTo, 4, oSP);
+                            txtPtr = dwread_epd(EPD(0x640B58));
+                            ct.print("\x13\x04공격\t\t\x17ㅣ\t\t\x04이동\t\t\x17ㅣ\t\t\x04기술\n\x13\x11아이템 사용\t\x17ㅣ\t\t\x04턴 넘기기\n\n\n\n\n\n\n");
+                            SetMemory(0x640B58, SetTo, txtPtr);
+                        }
+                        else{
+                            if(
+                                mouseX[cp] >= 351 && 
+                                mouseX[cp] <= 399 && 
+                                mouseY[cp] >= 130 && 
+                                mouseY[cp] <= 140
+                            ){
+                                SetDeaths(CurrentPlayer, SetTo, 5, oSP);
+                                txtPtr = dwread_epd(EPD(0x640B58));
+                                ct.print("\x13\x04공격\t\t\x17ㅣ\t\t\x04이동\t\t\x17ㅣ\t\t\x04기술\n\x13\x04아이템 사용\t\x17ㅣ\t\t\x11턴 넘기기\n\n\n\n\n\n\n");
+                                SetMemory(0x640B58, SetTo, txtPtr);
+                            }
+                                else{
+                                SetDeaths(CurrentPlayer, SetTo, 0, oSP);
+                                txtPtr = dwread_epd(EPD(0x640B58));
+                                ct.print("\x13\x04공격\t\t\x17ㅣ\t\t\x04이동\t\t\x17ㅣ\t\t\x04기술\n\x13\x04아이템 사용\t\x17ㅣ\t\t\x04턴 넘기기\n\n\n\n\n\n\n");
+                                SetMemory(0x640B58, SetTo, txtPtr);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }        
+}

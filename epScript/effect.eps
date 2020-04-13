@@ -1,0 +1,45 @@
+import customText as ct;
+
+function effect(player ,unit ,targetLoc) {
+    CreateUnitWithProperties(1, (unit), (9), (player), UnitProperty(hitpoint = 100, shield = 100, energy = 50, resource = 0, hanger = 0, cloaked = False, burrowed = False, intransit = False, hallucinated = False, invincible = True));
+    MoveUnit(1, (unit), (player), (11), (targetLoc + 1));
+    KillUnitAt(1, (unit), (targetLoc + 1), (player));
+}
+
+function airEffect(player ,targetLoc ,targetImage) {
+    wwrite(0x665AC0 + 1696 + 382 * 2, targetImage);
+    CreateUnitWithProperties(1, (206), (targetLoc), (player), UnitProperty(hitpoint = 100, shield = 100, energy = 50, resource = 0, hanger = 0, cloaked = False, burrowed = False, intransit = False, hallucinated = False, invincible = True));
+    KillUnitAt(1, (206), (targetLoc), (player));
+}
+
+function scanEffect(player ,targetLoc ,targetImage) {
+    wwrite(0x665AC0 + 1696 + 380 * 2, targetImage);
+    CreateUnit(1, (33), (targetLoc), (player));
+    RemoveUnit((33), (player));
+}
+
+function groundEffect(player ,targetLoc ,targetImage) {
+    wwrite(0x665AC0 + 1696 + 384 * 2, targetImage);
+    CreateUnitWithProperties(1, (208), (targetLoc), (player), UnitProperty(hitpoint = 100, shield = 100, energy = 50, resource = 0, hanger = 0, cloaked = False, burrowed = False, intransit = False, hallucinated = False, invincible = True));
+    MoveUnit(1, (208), (player), (11), (targetLoc));
+    KillUnitAt(1, (208), (targetLoc + 1), (player));
+}
+
+function orderSignal(targetLoc ,targetImage) {
+    wwrite(0x665AC0 + 1696 + 383 * 2, targetImage);
+    const temp = epdread_epd(EPD(0x628438));
+    CreateUnitWithProperties(1, (207), (targetLoc), (13), UnitProperty(hitpoint = 100, shield = 100, energy = 50, resource = 0, hanger = 0, cloaked = False, burrowed = False, intransit = False, hallucinated = False, invincible = True));
+    wwrite_epd(temp + 0x110 / 4,  0x110 % 4, 1);
+}
+
+function switchSound() {
+    const rand = dwrand() % (2 + 1);
+    for(var i = 0 ; i < 2 ; i++){
+        if(
+            rand == i
+        ){
+            ct.makeText("switch", i+1, ".ogg");
+            PlayWAV(ct.strBuffer);
+        }
+    }
+}

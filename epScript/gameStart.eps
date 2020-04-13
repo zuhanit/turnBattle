@@ -1,0 +1,200 @@
+import customText as ct;
+import effect as ef;
+
+const light = [0, 0, 0, 0, 0, 0];
+
+function EUDMoveLocation(Location ,X ,Y) {
+    addloc(Location, X, Y);
+}
+
+
+function downLight() {
+    EUDPlayerLoop()();
+    const CP = getcurpl();
+    if(
+        Memory(0x57F1B0, Exactly, (CP)) && 
+        light[CP] >= 1
+    ){
+        SetMemoryEPD(EPD(0x657A9C), (9), 1);
+        light[CP] -= 1;
+    }
+    EUDEndPlayerLoop();
+}
+
+function addLight() {
+    EUDPlayerLoop()();
+    const CP = getcurpl();
+    if(
+        Memory(0x57F1B0, Exactly, (CP)) && 
+        light[CP] <= 30
+    ){
+        SetMemoryEPD(EPD(0x657A9C), (8), 1);
+        light[CP] += 1;
+    }
+    EUDEndPlayerLoop();
+}
+
+function setLight(num) {
+    EUDPlayerLoop()();
+    const CP = getcurpl();
+    if(
+        Memory(0x57F1B0, Exactly, (CP))
+    ){
+        SetMemoryEPD(EPD(0x657A9C), (7), num);
+        light[CP] = num;
+    }
+    EUDEndPlayerLoop();
+}
+
+function main() {
+    const cp = getcurpl();
+
+    // 오프닝 밝기 설정
+    if(
+        Switch((3), (2)) && 
+        Switch((7), (2)) && 
+        light[cp] <= 30 // 밝기 30 이하일 경우
+    ){
+        addLight();
+    }
+            
+
+    /* ready */
+    if( // 캐릭터 선택 완료. 불 끄기
+        Switch((3), Set) &&
+        Command(Force2, Exactly, 0, "Flag") && 
+        Command(Force4, Exactly, 0, "Flag") && 
+        light[cp] >= 1
+    ){
+        DisplayText("\n\n\n\n\n\n\n\n\n\n", (4));
+        SetSwitch((4), Set);
+        SetSwitch((7), Clear);
+        downLight();
+    }
+            
+    if( // 불 다 꺼졌으면 옮기기
+        Switch((4), Set) && 
+        Switch((5), Cleared) && 
+        Command(Force2, Exactly, 0, "Flag") && 
+        Command(Force4, Exactly, 0, "Flag") && 
+        light[cp] == 0
+    ){
+        SetSwitch((8), Set);
+    }
+            
+    if( // 화면이동 이펙트 및 게임 시작
+        Switch((4), Set) && 
+        Switch((8), Set) && 
+        Switch((5), Cleared) && 
+        Command(Force2, Exactly, 0, "Flag") && 
+        Command(Force4, Exactly, 0, "Flag")
+    ){
+        var temp;
+        if(
+            temp == 0
+        ){
+            CenterView("[Map] Field");
+            ef.scanEffect(7, $L("[Map] Field"), 391); // 391 = Recall Field
+            ef.scanEffect(7, $L("[Map] Field"), 981); // 981 = Feedback Hit (Large)
+            PlayWAV("056.ogg");
+            temp = 1;
+            for(var i = 0 ; i < 6 ; i++){
+                CreateUnit(1, "Left Upper Level Door", (16+i), CurrentPlayer); // 시야 밝히기
+            }
+        }
+        SetSwitch((3), Clear);
+        setLight(31);
+        SetSwitch((6), Set);
+        var viewer;
+        viewer += 1;
+        if(
+            viewer <= 64
+        ){
+            EUDMoveLocation(11,-4,4);
+            EUDMoveLocation(12,4,-4);
+        }
+        if(
+            viewer > 64
+        ){
+            SetSwitch((5), Clear);
+            SetSwitch((6), Set);
+            SetSwitch((15), Set);
+        }
+    }
+
+    // 화면이동 이펙트 당시 센터뷰
+    for (var playerNum = 0; playerNum < 6; playerNum++) {
+        if(
+        Switch((6), (2))
+        ) {
+        if (playerNum < 3) {
+            CenterView("[Opening] Force 2");
+        } 
+        else{
+            CenterView("[Opening] Force 4");
+            }
+        } 
+    }
+            
+            
+    /* start */
+    if(
+        Switch((15), (2))
+    ){
+        var timer;
+        timer += 1;
+        if(
+            timer == 1
+        ){
+            ef.effect(7,94,0);
+            ef.effect(7,94,3);
+            ef.effect(7,90,0);
+            ef.effect(7,90,3);
+        }
+        if(
+            timer == 5
+        ){
+            ef.effect(7,94,1);
+            ef.effect(7,94,4);
+            ef.effect(7,90,1);
+            ef.effect(7,90,4);
+        }
+        if(
+            timer == 9
+        ){
+            ef.effect(7,94,2);
+            ef.effect(7,94,5);
+            ef.effect(7,90,2);
+            ef.effect(7,90,5);
+        }
+        if(
+            timer == 2
+        ){
+            MoveUnit(1, (229), (0), (22), (1));
+            MoveUnit(1, (229), (3), (22), (4));
+        }
+        if(
+            timer == 6
+        ){
+            MoveUnit(1, (229), (1), (22), (2));
+            MoveUnit(1, (229), (4), (22), (5));
+        }
+        if(
+            timer == 11
+        ){
+            MoveUnit(1, (229), (2), (22), (3));
+            MoveUnit(1, (229), (5), (22), (6));
+        }
+        if(
+            timer == 15
+        ){
+            SetCountdownTimer((7), 30);
+            for(var i = 0 ; i < 5 ; i++){
+                SetDeaths((13), (7), 1, (192));
+            }
+            SetSwitch((10), (4));
+            SetSwitch((9), (4));
+            SetSwitch((5), (5));
+        }
+    }
+}

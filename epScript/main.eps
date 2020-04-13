@@ -1,0 +1,29 @@
+
+import gameStart as gs;
+import useIndex as ui;
+import order as ord;
+import customText as ct;
+
+function onPluginStart() {
+    gs.setLight(0);
+    randomize();
+    EUDPlayerLoop()();
+        if (getcurpl() == 0 || getcurpl() == 1 || getcurpl() == 2 || getcurpl() == 3 || getcurpl() == 4 || getcurpl() == 5) {
+            if(
+                Command((19), (10), 0, (215)) && 
+                Command((21), (10), 0, (215))
+            ){
+                ct.print("\n\n\n\n\n\n\n\n\n\n");
+            }
+        }
+    EUDEndPlayerLoop();
+}
+
+function afterTriggerExec() {
+    foreach(cp : EUDLoopPlayer()) {
+        setcurpl(cp);
+        ui.main();
+        ord.main();
+        gs.main();
+    }
+}
