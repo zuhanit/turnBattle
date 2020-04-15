@@ -1,9 +1,0 @@
-
-function doMove(epd, charCode) {
-    MoveLocation((35+getcurpl()), (207), CurrentPlayer, (64));
-    RemoveUnit((207), CurrentPlayer);
-    SetMemoryEPD(epd + 0x0DC / 4, Add, -4096 * 1);
-    Order((charCode), CurrentPlayer, (64), (0), (35+getcurpl()));
-    SetMemoryEPD(epd + 0x0DC / 4, Add, 4096 * 1);
-    SetDeaths(CurrentPlayer, SetTo, 0, (193));
-}

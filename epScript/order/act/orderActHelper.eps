@@ -1,0 +1,35 @@
+import index.indexHelper as ih;
+import order.select.attack as oa;
+
+const cp = getcurpl();
+const charCode = ih.charCode[cp];
+const playerChar = ih.playerChar[cp];
+const playerCharEPD = ih.playerCharEPD[cp];
+const effectLoc = $L("[Player 1] Effect 02") + cp;
+
+function addStatusFlag(flag) {
+    SetMemoryXEPD(playerCharEPD + 0xDC / 4, SetTo, flag, flag);
+}
+
+function removeStatusFlag(flag) {
+    SetMemoryXEPD(playerCharEPD + 0xDC / 4, SetTo, 0, flag);
+}
+
+function doMove() {
+    MoveLocation(effectLoc, $U("orderSignal"), CurrentPlayer, "Anywhere");
+    RemoveUnit($U("orderSignal"), CurrentPlayer);
+    //removeStatusFlag(0x1000);
+    SetMemoryEPD(playerCharEPD + 0x0DC / 4, Add, -4096 * 1);
+    Order(charCode, CurrentPlayer, "Anywhere", (0), effectLoc);
+    //addStatusFlag(0x1000);
+    SetMemoryEPD(playerCharEPD + 0x0DC / 4, Add, 4096 * 1);
+    SetDeaths(CurrentPlayer, SetTo, 0, $U("playerAct"));
+}
+
+function doAttack() {
+    removeStatusFlag(0x1000);
+    SetMemoryEPD(playerCharEPD + 0x58 / 4, SetTo, oa.userTarget);
+    SetMemoryXEPD(playerCharEPD + 0x4D, SetTo, 10, 0xFF);
+    addStatusFlag(0x1000);
+    SetDeaths(CurrentPlayer, SetTo, 0, $U("playerAct"));
+}

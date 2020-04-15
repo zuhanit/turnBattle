@@ -1,0 +1,109 @@
+/* 공격
+적을 인식하고, userTarget에 상대의 ptr을 넣어준다. 그 이후 행동턴에서 배열을 읽어와 target 대입하고 attack 명령. */
+
+import customText as ct;
+import effect as ef;
+
+const targetAbleUnits = [
+    $U("Terran Marine"), 
+    $U("Terran Ghost"), 
+    $U("Zerg Hydralisk"), 
+    $U("Protoss Dark Templar"), 
+    $U("Protoss Zealot"),
+    $U("Protoss High Templar")
+];
+
+const targetNames = [
+    Db("\x17탐험가"),
+    Db("\x17궁수"),
+    Db("\x17부두술사"),
+    Db("\x17검사"),
+    Db("\x17전사"),
+    Db("\x17마법사")
+];
+
+const userTarget = EUDArray(6);
+var selectedUnitPointer;
+var selectedUnitType;
+var selectedUnitPlayer;
+const force2 = [0, 1, 2];
+const force4 = [3, 4, 5];
+
+const cp = getcurpl();
+var txtPtr;
+
+function selectedUnitVariable() {
+    if (
+        MemoryEPD(EPD(0x6284E8), AtLeast, 1)
+    ) {       
+        selectedUnitPointer = dwread_epd_safe(EPD(0x6284E8));
+        selectedUnitType = dwread_epd(EPD(selectedUnitPointer + 0x64 / 4));
+        selectedUnitPlayer = maskread_epd(EPD(selectedUnitPointer + 0x4C / 4), 0xF);
+    }
+}
+
+function targetNameDisplay() {
+    for (var targetNum = 0; targetNum < 6; targetNum++) {
+        if (
+            selectedUnitType == targetAbleUnits[targetNum]
+        ){
+            ct.print(ct.str(targetAbleUnits[targetNum]), "\x13\x04를 공격하시겠습니까?\n\x13\x04공격을 원하신다면 \x19클릭\x04해주세요!");
+            return;
+        }
+    }
+}
+
+function systemApply() {
+    SetDeaths(AllPlayers, SetTo, cp+1, "Nuclear Missile");
+    SetDeaths(CurrentPlayer, SetTo, 0, $U("turnTF"));
+    SetDeaths(CurrentPlayer, SetTo, 1, $U("playerAct"));
+    SetDeaths(CurrentPlayer, SetTo, 0, $U("orderSelectPosition"));
+    SetDeaths(CurrentPlayer, SetTo, 0, $U("orderSelect"));
+}
+
+function targetUnit() {
+    if (
+        Deaths(CurrentPlayer, Exactly, 1, $U("mouseLR"))
+    ){
+        userTarget[cp] = selectedUnitPointer;
+        systemApply();
+        ef.switchSound();
+    }
+}
+
+
+
+function attack() {
+    if(
+        Deaths(CurrentPlayer, Exactly, 1, $U("orderSelect"))
+    ){
+        selectedUnitVariable();
+        if (selectedUnitPointer == 0) {           
+            txtPtr = gettextptr();;
+            //ct.print("\x13\x04공격할 적을 \x19클릭\x04해주세요!\n\x13\x04우클릭으로 명령을 취소할 수 있습니다\n\n\n\n\n\n\n");
+            SetMemory(0x640B58, SetTo, txtPtr);
+        }
+        else{
+            if (
+                selectedUnitType == targetAbleUnits
+            ){
+                if (
+                    cp == force2 &&
+                    selectedUnitPlayer == force4
+                ){                    
+                    targetNameDisplay();
+                    targetUnit();
+                    return;
+                }
+                if (
+                    cp == force4 &&
+                    selectedUnitPlayer == force2
+                ){                    
+                    targetNameDisplay();
+                    targetUnit();
+                    return;
+                }
+            }
+        }
+    }
+}

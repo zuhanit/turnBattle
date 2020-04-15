@@ -1,5 +1,6 @@
 import customText as ct;
 import effect as ef;
+import index.indexHelper as ih;
 
 const charCode = [0, 1, 38, 61, 65, 67];
 
@@ -21,6 +22,8 @@ Db("\x17전사"),
 Db("\x17마법사")
 ];
 
+const cp = getcurpl();
+
 function CUnit(index) {
     if (index == 0) {
         return 0x59CCA8;
@@ -34,23 +37,22 @@ function character_info(num) {
     ct.print("\n\n\n\n\n\n\n\n\n\n");
     ct.print(ct.str(charInfoText[num]));
     MoveLocation("[Map] Effect", charCode[num], P12, "[Map] Select Field");
-    ef.halluEffect(P8, "Devouring One", "[Map] Effect");
+    ef.halluEffect(7, $U("Devouring One"), $L("[Map] Effect"));
     PlayWAV("Upgrade.ogg");
-    SetDeaths(cp, SetTo, 1+(2*i), "Mercenary Gunship (Unused)");
+    SetDeaths(cp, SetTo, 1+(2*num), "Mercenary Gunship (Unused)");
 }
 
 function character_select(num) {
-    const cp = getcurpl();
     GiveUnits(1, charCode[num], P12, "Anywhere", P11);
     GiveUnits(1, charCode[num], P11, "Anywhere", P12);
     ct.print("\n\n\n\n\n\n\n\n\n\n");
     ct.print("\n\n\n\n\x13", ct.str(charName[num]), "\x04를 선택하셨습니다!\n\x13\x05다른 플레이어들이 선택할 때까지 기다려주세요.\n\n\n\n\n");
     PlayWAV("Battlecry_1.ogg");
     MoveLocation("[Map] Effect", charCode[num], P12, "[Map] Select Field");   
-    ef.halluEffect(P8, "Devouring One", "[Map] Effect");
-    ef.halluEffect(P8, "Kakaru", "[Map] Effect");
-    SetDeaths(cp, SetTo, i, "Cargo Ship");
-    playerChar[cp] = i;
+    ef.halluEffect(7, $U("Devouring One"), $L("[Map] Effect"));
+    ef.effect(7, $U("Kakaru"), $L("[Map] Effect"));
+    SetDeaths(cp, SetTo, num, "Cargo Ship");
+    ih.playerChar[cp] = num;
     SetDeaths(cp, SetTo, 0, "Mercenary Gunship (Unused)");
     KillUnit("Flag", cp);
 }

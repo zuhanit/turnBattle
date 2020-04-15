@@ -1,4 +1,11 @@
 import customText as ct;
+import index.indexHelper as ih;
+
+function halluEffect(player ,unit ,targetLoc) {
+    CreateUnitWithProperties(1, (unit), (9), (player), UnitProperty(hitpoint = 100, shield = 100, energy = 50, resource = 0, hanger = 0, cloaked = False, burrowed = False, intransit = False, hallucinated = True, invincible = True));
+    MoveUnit(1, (unit), (player), (11), (targetLoc + 1));
+    KillUnitAt(1, (unit), (targetLoc + 1), (player));
+}
 
 function effect(player ,unit ,targetLoc) {
     CreateUnitWithProperties(1, (unit), (9), (player), UnitProperty(hitpoint = 100, shield = 100, energy = 50, resource = 0, hanger = 0, cloaked = False, burrowed = False, intransit = False, hallucinated = False, invincible = True));
@@ -30,6 +37,18 @@ function orderSignal(targetLoc ,targetImage) {
     const temp = epdread_epd(EPD(0x628438));
     CreateUnitWithProperties(1, (207), (targetLoc), (13), UnitProperty(hitpoint = 100, shield = 100, energy = 50, resource = 0, hanger = 0, cloaked = False, burrowed = False, intransit = False, hallucinated = False, invincible = True));
     wwrite_epd(temp + 0x110 / 4,  0x110 % 4, 1);
+}
+
+function turnStartEffect() {
+    const cp = getcurpl();
+    const loc = $L("[Player 1] Move")+cp + 1;
+   	const charUnit = ih.charCode[ih.playerChar[cp]];
+	MoveLocation(loc, charUnit, CurrentPlayer, "Anywhere");
+    scanEffect(P8,loc,"Recall Field");
+    airEffect(P8,loc,"Carrier");
+    CenterView((loc));
+    SetDeaths(CurrentPlayer, SetTo, 1, $U("turnTF"));
+    bwrite_epd(ih.playerCharEPD[cp] + 0x04D / 4,  0x04D % 4, 1);
 }
 
 function switchSound() {

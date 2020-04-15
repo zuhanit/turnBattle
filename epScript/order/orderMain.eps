@@ -1,0 +1,11 @@
+import order.select.main as os;
+import order.act.main as oa;
+import index.indexHelper as ih;
+
+function main() {
+    const cp = getcurpl();
+    MoveLocation($L("[Player 1] Move") + cp + 1, (ih.charCode[ih.playerChar[cp]]), cp, "Anywhere");
+    MoveLocation($L("[Player 1] Move 2") + cp + 1, (ih.charCode[ih.playerChar[cp]]), cp, "Anywhere");
+    os.orderSelect();
+    oa.orderAct();
+}

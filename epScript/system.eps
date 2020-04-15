@@ -1,120 +1,111 @@
-    /*
-    시스템 부분
-    턴 진행은 명령 -> 명령 실행(전투) -> 명령 순으로 돌아간다.
-    */
+/*
+시스템 부분
+턴 진행은 명령 -> 명령 실행(전투) -> 명령 순으로 돌아간다.
+*/
+import customText as ct;
+import effect as ef;
+import useIndex as ui;
 
-    import customText as ct;
- 	import effect as ef;
-    import useIndex as ui;
+const playerTurning = EUDArray(6);
+const turnText = [Db("\x04진행중"), Db("\x04진행중"), Db("\x04진행중"), Db("\x04진행중"), Db("\x04진행중"), Db("\x04진행중")];
+const cp = getcurpl();
 
-    const playerTurning = EUDArray(6);
-    const turnText = [Db("\x04진행중"), Db("\x04진행중"), Db("\x04진행중"), Db("\x04진행중"), Db("\x04진행중"), Db("\x04진행중")];
-
-    function afterTriggerExec() {
-        foreach(cp : EUDLoopPlayer()) {
-        setcurpl(cp);
-        
+function main() {
+    if(
+        Deaths(CurrentPlayer, Exactly, 0, "turnTF")
+    ){
+        playerTurning[cp] = 0;
+    }
+    if( // 턴 진행상황 표시
+        Switch("gameStart", (2))
+    ){
         if(
-            Deaths(CurrentPlayer, Exactly, 0, "turnTF")
-        ){
-            playerTurning[cp] = 0;
-        }
-
-        if( // 턴 진행상황 표시
-            Switch("gameStart", (2))
+            Switch("turnOn", Set) && 
+            Switch("actOn", Cleared)
         ){
             if(
-                Switch("turnOn", Set) && 
-                Switch("actOn", Cleared)
+                playerTurning[cp] == 0
             ){
-                if(
-                    playerTurning[cp] == 0
-                ){
-                    turnText[cp] = Db("\x04진행중");
-                }
-                else{
-                    turnText[cp] = Db("\x04마침");
-                }
-                ct.chatAnnouncement("\x16P1 ", ct.str(turnText[0]), " \x16P2 ", ct.str(turnText[1]), " \x16P3 ", ct.str(turnText[2]), " \x1bP4 ", ct.str(turnText[3]), " \x1bP5 ", ct.str(turnText[4]), " \x1bP6 ", ct.str(turnText[5]), "");
+                turnText[cp] = Db("\x04진행중");
             }
             else{
-                ct.chatAnnouncement("\x04전투 진행중! ", dwread_epd(192 * 12 + 0), " ", dwread_epd(192 * 12 + 1), " ", dwread_epd(192 * 12 + 2), " ", dwread_epd(192 * 12 + 3), "");
+                turnText[cp] = Db("\x04마침");
             }
+            ct.chatAnnouncement("\x16P1 ", ct.str(turnText[0]), " \x16P2 ", ct.str(turnText[1]), " \x16P3 ", ct.str(turnText[2]), " \x1bP4 ", ct.str(turnText[3]), " \x1bP5 ", ct.str(turnText[4]), " \x1bP6 ", ct.str(turnText[5]), "");
         }
-        
-        /* 안내 메시지들 */
-        for(var i = 0 ; i < 5 ; i++){
-            if(
-                Deaths(CurrentPlayer, Exactly, i+1, (14))
-            ){
-                if(
-                    i <= 2
-                ){
-                    SetDeaths(CurrentPlayer, SetTo, 0, (14));
-                    PlayWAV("035.ogg");
-                    ct.print("\x13\x16P", i+1, "\x04이 턴을 종료했습니다!\n\x13\x05턴 종료를 기다립니다.");
-                }
-                else{
-                    SetDeaths(CurrentPlayer, SetTo, 0, (14));
-                    PlayWAV("035.ogg");
-                    ct.print("\x13\x1bP", i+1, "\x04이 턴을 종료했습니다!\n\x13\x05턴 종료를 기다립니다.");
-                }
-            }
-        }
-        
-        /* 턴 처리 */
-
-        /* 카운트다운 타이머 처리 */
-        if( // 전투 끝나는 것 처리
-            Switch("gameStart", Set) && 
-            Switch("actOn", Set) && 
-            Switch("turnOn", Cleared) &&
-            Deaths(0, (10), 0, (192)) &&
-            Deaths(1, (10), 0, (192)) &&
-            Deaths(2, (10), 0, (192)) &&
-            Deaths(3, (10), 0, (192)) &&
-            Deaths(4, (10), 0, (192)) &&
-            Deaths(5, (10), 0, (192)) &&
-            CountdownTimer((1), 0)            
-        ){
-            SetCountdownTimer((7), 30);
-            playerTurning[cp] = 0;
-            SetDeaths(CurrentPlayer, SetTo, 1, "turnTF");
-            SetSwitch("actOn", Set);
-            SetSwitch("turnOn", Clear);
-            ui.turnStartEffect();
-        }
-        if( // 아무것도 안 하고 명령 턴 시간 끝났을 경우 처리
-            Switch("gameStart", Set) && 
-            Switch("turnOn", Set) && 
-            Switch("actOn", Cleared) && 
-            CountdownTimer((1), 0)
-        ){
-            if(
-                !Deaths((0), (10), 1, (192)) || 
-                !Deaths((1), (10), 1, (192)) || 
-                !Deaths((2), (10), 1, (192)) || 
-                !Deaths((3), (10), 1, (192)) || 
-                !Deaths((4), (10), 1, (192)) || 
-                !Deaths((5), (10), 1, (192))
-            ){
-                ct.print("\n\n\n\n\n\n\n\n\n\n");
-                SetDeaths(CurrentPlayer, SetTo, 0, "turnTF");
-            }
-        }
-
-        if( // 전투 시작 처리
-            Switch("gameStart", Set) && 
-            Switch("actOn", Cleared) && 
-            Switch("turnOn", Set) &&
-            Deaths(Force2, Exactly, 0, "turnTF") && 
-            Deaths(Force4, Exactly, 0, "turnTF")
-        ){
-            SetSwitch("actOn", Set);
-            SetSwitch("turnOn", Clear);
-            SetCountdownTimer((7), 10);
-        }
-    
-
+        else{
+            ct.chatAnnouncement("\x04전투 진행중! ", dwread_epd(192 * 12 + 0), " ", dwread_epd(192 * 12 + 1), " ", dwread_epd(192 * 12 + 2), " ", dwread_epd(192 * 12 + 3), "");
         }
     }
+    
+    /* 안내 메시지들 */
+    for(var i = 0 ; i < 5 ; i++){
+        if(
+            Deaths(CurrentPlayer, Exactly, i+1, "Nuclear Missile")
+        ){
+            if(
+                i <= 2
+            ){
+                SetDeaths(CurrentPlayer, SetTo, 0, "Nuclear Missile");
+                PlayWAV("035.ogg");
+                ct.print("\x13\x16P", i+1, "\x04이 턴을 종료했습니다!\n\x13\x05턴 종료를 기다립니다.");
+            }
+            else{
+                SetDeaths(CurrentPlayer, SetTo, 0, "Nuclear Missile");
+                PlayWAV("035.ogg");
+                ct.print("\x13\x1bP", i+1, "\x04이 턴을 종료했습니다!\n\x13\x05턴 종료를 기다립니다.");
+            }
+        }
+    }
+    
+    /* 턴 처리 */
+    /* 카운트다운 타이머 처리 */
+    if( // 전투 끝나는 것 처리
+        Switch("gameStart", Set) && 
+        Switch("actOn", Set) && 
+        Switch("turnOn", Cleared) &&
+        Deaths(0, (10), 0, (192)) &&
+        Deaths(1, (10), 0, (192)) &&
+        Deaths(2, (10), 0, (192)) &&
+        Deaths(3, (10), 0, (192)) &&
+        Deaths(4, (10), 0, (192)) &&
+        Deaths(5, (10), 0, (192)) &&
+        CountdownTimer((1), 0)            
+    ){
+        SetCountdownTimer((7), 30);
+        playerTurning[cp] = 0;
+        SetDeaths(CurrentPlayer, SetTo, 1, "turnTF");
+        SetSwitch("actOn", Set);
+        SetSwitch("turnOn", Clear);
+        ui.turnStartEffect();
+    }
+    if( // 아무것도 안 하고 명령 턴 시간 끝났을 경우 처리
+        Switch("gameStart", Set) && 
+        Switch("turnOn", Set) && 
+        Switch("actOn", Cleared) && 
+        CountdownTimer((1), 0)
+    ){
+        if(
+            !Deaths((0), (10), 1, (192)) || 
+            !Deaths((1), (10), 1, (192)) || 
+            !Deaths((2), (10), 1, (192)) || 
+            !Deaths((3), (10), 1, (192)) || 
+            !Deaths((4), (10), 1, (192)) || 
+            !Deaths((5), (10), 1, (192))
+        ){
+            ct.print("\n\n\n\n\n\n\n\n\n\n");
+            SetDeaths(CurrentPlayer, SetTo, 0, "turnTF");
+        }
+    }
+    if( // 전투 시작 처리
+        Switch("gameStart", Set) && 
+        Switch("actOn", Cleared) && 
+        Switch("turnOn", Set) &&
+        Deaths(Force2, Exactly, 0, "turnTF") && 
+        Deaths(Force4, Exactly, 0, "turnTF")
+    ){
+        SetSwitch("actOn", Set);
+        SetSwitch("turnOn", Clear);
+        SetCountdownTimer((7), 10);
+    }
+}

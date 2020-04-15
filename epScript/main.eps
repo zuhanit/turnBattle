@@ -1,8 +1,10 @@
 
 import gameStart as gs;
-import useIndex as ui;
-import order as ord;
+import index.indexHelper as ih;
+import order.orderMain as od;
 import customText as ct;
+import system as sy;
+import effect as ef;
 
 function onPluginStart() {
     gs.setLight(0);
@@ -19,11 +21,14 @@ function onPluginStart() {
     EUDEndPlayerLoop();
 }
 
+
 function afterTriggerExec() {
     foreach(cp : EUDLoopPlayer()) {
         setcurpl(cp);
-        ui.main();
-        ord.main();
+        ih.main();
+        od.main();
         gs.main();
-    }
+        sy.main();
+        //ef.effect(7, 8, $L("[Player 1] Move"));
+   }
 }

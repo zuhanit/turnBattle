@@ -1,13 +1,8 @@
-import customText as ct;
-import effect as ef;
-import orderHelper as oh;
-import characterSelectHelper as cs;
-var txtPtr;
+// 스킬
 
-const light = EUDArray(5);
-const playerChar = EUDArray(5);
-const playerCharEPD = EUDArray(5);
-const charCode = [0, 1, 38, 61, 65, 67];
+import customText as ct;
+import index.indexHelper as ih;
+
 const skillText = [
     Db("\t\x19사용할 기술을 선택해주세요!\n\t\t\x1BTP 1\t\x04둔화 덫\t\t\t\x16… 밟으면 2턴간 느려지는 덫 설치\n\t\t\x1BTP 1\t\x04지뢰 설치\t\t\t\x16… 데미지 20의 지뢰 설치\n\t\t\x1BTP 2\t\x04응급치료\t\t\t\x16… 체력 15 회복\n\t\t\x1BTP 3\t\x04올가미 투척\t\t\x16… 맞으면 2턴간 느려지는 올가미 투척\n\t\t\x1BTP 4\t\x04자연과의 동화\t\t\t\t\x16… 1턴간 은신. 가까이 올 경우 발각"),
     Db("\t\x19사용할 기술을 선택해주세요!\n\t\t\x1BTP 0\t\x04침착\t\t\t\t\x16… 적을 잡으면 TP 3 상승\n\t\t\x1BTP 1\t\x04활쏘기\t\t\t\t\x16… 데미지 20의 화살 발사. 사용 후 스킬 사용 가능\n\t\t\x1BTP 1\t\x04집중 사격\t\t\t\x16… 대상에게 데미지 30의 빗나가지 않는 화살 발사.\n\t\t\x1BTP 2\t\x04심호흡\t\t\t\t\x16… 1턴 뒤 TP 3 획득\n\t\t\x1BTP 3\t\x04작살\t\t\t\t\x16… 맞을 경우 1턴간 기절하는 화살 발사"),
@@ -16,91 +11,15 @@ const skillText = [
     Db("\t\x19사용할 기술을 선택해주세요!\n\t\t\x1BTP 0\t\x04명예로운 전투\t\t\x16… 적을 잡으면 체력 30 회복. 패시브\n\t\t\x1BTP 1\t\x04주먹질\t\t\t\t\x16… 대상 적에게 30의 피해\n\t\t\x1BTP 1\t\x04마음가짐\t\t\t\x16… 1턴동안 방어력 3 상승\n\t\t\x1BTP 2\t\x04달려들기\t\t\t\x16… 지정한 위치로 돌진 후 가까이 있는 적을 공격\n\t\t\x1BTP 3\t\x04강력한 한 방\t\t\x16… 대상 적에게 30의 피해를 주고 1턴간 기절시킴"),
     Db("\t\x19사용할 기술을 선택해주세요!\n\t\t\x1BTP 1\t\x04마법 화살\t\t\t\x16… 데미지 30의 화살 발사\n\t\t\x1BTP 1\t\x04얼음송이\t\t\t\x16… 적을 둔화시키는 영역 생성\n\t\t\x1BTP 2\t\x04파이어볼\t\t\t\x16… 데미지 60의 화염구 발사\n\t\t\x1BTP 3\t\x04마법의 보호막\t\t\x16… 50의 피해를 막아주는 보호막 사용\n\t\t\x1BTP 4\t\x04메테오\t\t\t\t\x16… 데미지 70의 거대 유성 소환. 1턴 뒤 효과 발생")
 ];
+const cp = getcurpl();
+var txtPtr;
 
-
-function CUnit(index) {
-    if (index == 0) {
-        return 0x59CCA8;
-    }
-    return 0x628298 - 0x150 * (index-1);
-}
-
-function turnStartEffect() {
-    const loc = 23+getcurpl();
-   	const charUnit = charCode[playerChar[getcurpl()]];
-	MoveLocation((loc), (charUnit), (13), (64));
-    ef.scanEffect(7,loc,391);
-    ef.airEffect(7,loc,112);
-    CenterView((loc));
-    SetDeaths((13), (7), 1, (192));
-    bwrite_epd(playerCharEPD[getcurpl()] + 0x04D / 4,  0x04D % 4, 1);
-}
-
-function getCharacterEpd(player) {
-    return playerCharEPD(player);
-}
-
-function getCharacterCode(player) {
-    return playerChar(player);
-}
-
-function main() {
-    const cp = getcurpl();
-    for (var i = 0 ; i < 6 ; i++){
-        if(
-            Deaths(cp, Exactly, 0, "Cargo Ship (Unused)") && 
-            Switch((3), Set) &&
-            Memory(0x6284E8 + 0x30 * cp, Exactly, CUnit(i)) && 
-            Command(P12, AtLeast, 1, charCode[i])
-        ){
-            if(
-                Deaths(cp, AtLeast, (2*i)+2, "Mercenary Gunship (Unused)") || // 92 = Mecenary Gunship, 어떤 캐릭터 선택했었는지
-                Deaths(cp, AtMost, 2*i, "Mercenary Gunship (Unused)")
-            ){
-                cs.character_info(i)
-            }
-            else{
-                cs.character_select(i);
-                playerCharEPD[cp] = epdread_epd(EPD(0x628438));
-                CreateUnitWithProperties(1, charCode[i], "[Char] Wait", cp, UnitProperty(hitpoint = 100, shield = 100, energy = 50, resource = 0, hanger = 0, cloaked = False, burrowed = False, intransit = False, hallucinated = False, invincible = False));
-                SetMemoryEPD(playerCharEPD[cp] + 0x0DC / 4, Add, 4096 * 1);
-                playerChar[cp] = i;
-            }
-        }
-    }
-
-    // 캐릭터에게 로케이션 이동
-    for(var i = 0 ; i < 5 ; i++){
-        MoveLocation((23+cp), (charCode[playerChar[cp]]), cp, (64));
-        MoveLocation((41+cp), (charCode[playerChar[cp]]), cp, (64));
-    }
-
-    // 전투 행동 처리
+function skill(){
     if(
-    Switch("gameStart", Set) && 
-    Switch("actOn", Set) && 
-    Switch("turnOn", Cleared)
+        Deaths(CurrentPlayer, Exactly, 3, $U("orderSelect"))
     ){
-        var temp;
-        if(
-        temp == 0
-            ){
-                ct.print("\x13\x17전투 개시!");
-                temp = 1;
-            }
-            if(
-                    CountdownTimer((0), 1)
-            ){
-                // 공격
-                // 이동
-            if(
-                Deaths(cp, Exactly, 2, (193))
-            ){
-                oh.doMove(playerCharEPD[cp], charCode[playerCharEPD[cp]]);
-            }
-            // 스킬
-            // 아이템
-            // 턴 넘김
-        }
+        txtPtr = dwread_epd(EPD(0x640B58));
+        ct.print(ct.str(skillText[ih.playerChar[cp]]));
+        SetMemory(0x640B58, SetTo, txtPtr);
     }
 }

@@ -1,0 +1,45 @@
+import order.act.orderActHelper as oh;
+import customText as ct;
+
+const playerAct = $U("playerAct");
+
+function orderAct() {
+    const cp = getcurpl();
+    if(
+        Switch("gameStart", Set) && 
+        Switch("actOn", Set) && 
+        Switch("turnOn", Cleared)
+    ){
+        var temp;
+        if(
+        temp == 0
+            ){
+                ct.print("\x13\x17전투 개시!");
+                temp = 1;
+            }
+            if(
+                    CountdownTimer((0), 1)
+            ){
+                    // 공격
+                if(
+                    Deaths(cp, Exactly, 1, playerAct)
+                ){
+                    oh.doAttack();
+                    return;
+                }
+
+                    // 이동
+                if(
+                    Deaths(cp, Exactly, 2, playerAct)
+                ){
+                    ct.print("asd");
+                    oh.doMove();
+                    return;
+                }
+
+                    // 스킬
+                    // 아이템
+                    // 턴 넘김
+        }
+    }
+}

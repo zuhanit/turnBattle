@@ -1,0 +1,81 @@
+// 이동
+import customText as ct;
+import effect as ef;
+
+const orderSelect = $U("orderSelect");
+const turnTF = $U("turnTF");
+const orderSelectPosition = $U("orderSelectPosition");
+const mouseLR = $U("mouseLR");
+var txtPtr;
+
+function LocationDistance(loc1 ,loc2) {
+    const locTable = EPD(0x58DC60);
+    const x1 = dwread_epd(locTable + loc1 * 5) + dwread_epd(locTable + loc1 * 5 + 2);
+    const y1 = dwread_epd(locTable + loc1 * 5 + 1) + dwread_epd(locTable + loc1 * 5 + 3);
+    const x2 = dwread_epd(locTable + loc2 * 5) + dwread_epd(locTable + loc2 * 5 + 2);
+    const y2 = dwread_epd(locTable + loc2 * 5 + 1) + dwread_epd(locTable + loc2 * 5 + 3);
+    return sqrt((x1 - x2)*(x1 - x2)+(y1-y2)*(y1-y2)) / 2;
+}
+
+function move() {
+    const cp = getcurpl();
+    if(
+        Deaths(CurrentPlayer, Exactly, 2, orderSelect)
+    ){
+        var temp2;
+        var dist;
+        dist = LocationDistance($L("[Player 1] Move") + cp, $L("[Player 1] Mouse") + cp);
+        if(
+            dist <= 228 // 범위 안이면
+        ){
+            txtPtr = gettextptr();;
+            ct.print("\x13\x04이동할 위치를 \x19클릭\x04해주세요!\n\x13\x04우클릭으로 명령을 취소할 수 있습니다\n\n\n\n\n\n\n");
+            SetMemory(0x640B58, SetTo, txtPtr);
+            MoveUnit(1, "Terran Barracks", CurrentPlayer, "Anywhere", (29+cp)); // 배럭은 마우스 위치 표시 용도
+            var temp;
+            temp2 = 0;
+
+            if(
+                temp == 0 // 배럭 생성하는 용도의 temp
+            ){
+                const mouse = epdread_epd(EPD(0x628438));
+                wwrite(0x665AC0 + 1696 + 249 * 2, 571);
+                CreateUnit(1, "Terran Barracks", "[Wait] 01", CurrentPlayer);
+                SetMemoryEPD(mouse + 0x0DC / 4, SetTo, 8388608);
+                temp = 1;
+            }
+            if(
+                Deaths(CurrentPlayer, Exactly, 1, mouseLR) // 이동 위치 설정
+            ){
+
+                // 이펙트 및 처리 
+                ct.print("\n\n\n\n\n\n\n\n\n\n");
+                RemoveUnit("Terran Barracks", CurrentPlayer);
+                SetDeaths(CurrentPlayer, SetTo, 0, (192));
+                wwrite(0x665AC0 + 1696 + 383 * 2, 561);
+                CreateUnit(1, $U("orderSignal"), (29+cp), CurrentPlayer);
+                temp = 0;
+                ef.switchSound();
+
+                // 시스템 부분 처리
+                SetDeaths(AllPlayers, SetTo, cp+1, $U("systemText"));
+                SetDeaths(CurrentPlayer, SetTo, 0, turnTF);
+                SetDeaths(CurrentPlayer, SetTo, 2, "playerAct");
+                SetDeaths(CurrentPlayer, SetTo, 0, orderSelectPosition);
+                SetDeaths(CurrentPlayer, SetTo, 0, orderSelect);
+            }
+        }
+
+        else{ // 범위 바깥이면
+            txtPtr = gettextptr();
+            ct.print("\x13\x04이동 가능한 범위를 벗어났습니다!\n\x13", dist, "");
+            SetMemory(0x640B58, SetTo, txtPtr);
+            if(
+                temp2 == 0
+            ){
+                temp2 = 1;
+                PlayWAV("sound\\protorderSelects\\probe\\pprerr00.wav");
+            }
+        } 
+    }
+}

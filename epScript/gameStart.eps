@@ -117,24 +117,22 @@ function main() {
             viewer > 64
         ){
             SetSwitch((5), Clear);
-            SetSwitch((6), Set);
+            SetSwitch((6), Clear);
             SetSwitch((15), Set);
         }
     }
 
     // 화면이동 이펙트 당시 센터뷰
-    for (var playerNum = 0; playerNum < 6; playerNum++) {
-        if(
+    if(
         Switch((6), (2))
-        ) {
-        if (playerNum < 3) {
+    ) {
+        if (cp < 3) {
             CenterView("[Opening] Force 2");
         } 
         else{
             CenterView("[Opening] Force 4");
-            }
-        } 
-    }
+        }
+    } 
             
             
     /* start */

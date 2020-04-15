@@ -1,0 +1,48 @@
+/* 캐릭터 EPD와 캐릭터 순서, 그리고 캐릭터 코드를 갖고 있는 메인 코드.
+다른 함수에서 필요하다면 improt해서 ih.charCode[i] 식으로 사용. */
+
+import customText as ct;
+import effect as ef;
+import orderHelper as oh;
+import index.characterSelectHelper as cs;
+var txtPtr;
+
+const light = EUDArray(6);
+const playerChar = EUDArray(6);
+const playerCharEPD = EUDArray(6);
+const charCode = [0, 1, 38, 61, 65, 67];
+
+
+function CUnit(index) {
+    if (index == 0) {
+        return 0x59CCA8;
+    }
+    return 0x628298 - 0x150 * (index-1);
+}
+
+function main() {
+    const cp = getcurpl();
+
+    for (var i = 0 ; i < 6 ; i++){
+        if(
+            Deaths(cp, Exactly, 0, "Cargo Ship (Unused)") && 
+            Switch((3), Set) &&
+            Memory(0x6284E8 + 0x30 * cp, Exactly, CUnit(i)) && 
+            Command(P12, AtLeast, 1, charCode[i])
+        ){
+            if(
+                Deaths(cp, AtLeast, (2*i)+2, "Mercenary Gunship (Unused)") || // 92 = Mecenary Gunship, 어떤 캐릭터 선택했었는지
+                Deaths(cp, AtMost, 2*i, "Mercenary Gunship (Unused)")
+            ){
+                cs.character_info(i);
+            }
+            else{
+                cs.character_select(i);
+                //playerCharEPD[cp] = epdread_epd(EPD());
+                CreateUnitWithProperties(1, charCode[i], "[Char] Wait", cp, UnitProperty(hitpoint = 100, shield = 100, energy = 50, resource = 0, hanger = 0, cloaked = False, burrowed = False, intransit = False, hallucinated = False, invincible = False));
+                SetMemoryEPD(playerCharEPD[cp] + 0x0DC / 4, Add, 4096 * 1);
+                playerChar[cp] = i;
+            }
+        }
+    }
+}
